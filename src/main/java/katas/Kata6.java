@@ -1,8 +1,10 @@
 package katas;
 
+import model.BoxArt;
 import model.Movie;
 import util.DataUtil;
 
+import java.util.Comparator;
 import java.util.List;
 
 /*
@@ -11,9 +13,19 @@ import java.util.List;
     Output: String
 */
 public class Kata6 {
-    public static String execute() {
+    public static String execute()  {
         List<Movie> movies = DataUtil.getMovies();
 
-        return "someUrl";
+        return movies.stream()
+                .flatMap(movie -> movie.getBoxarts().stream())
+                .reduce((boxart1, boxart2) -> {
+                    return boxart1.getWidth()
+                            .compareTo(boxart2.getWidth()) > 0
+                            && boxart1.getHeight()
+                            .compareTo(boxart2.getHeight()) > 0 ? boxart1 : boxart2;
+                })
+                .map(BoxArt::getUrl)
+                .orElseThrow(() -> new IllegalArgumentException("There are no box art data in the movies"));
+
     }
 }

@@ -16,9 +16,12 @@ import java.util.Map;
     Output: Double
 */
 public class Kata5 {
-    public static Double execute() {
+    public static Double execute() throws NullPointerException {
         List<Movie> movies = DataUtil.getMovies();
 
-        return 3.0;
+        return movies.stream()
+                .map(Movie::getRating)
+                .reduce(Math::max)
+                .orElseThrow(NullPointerException::new);
     }
 }
