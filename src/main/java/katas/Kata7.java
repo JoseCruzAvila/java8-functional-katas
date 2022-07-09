@@ -10,7 +10,9 @@ import util.DataUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
     Goal: Retrieve the id, title, and smallest box art url for every video
@@ -23,19 +25,20 @@ public class Kata7 {
 
         return movieLists.stream()
                 .flatMap(movieList -> movieList.getVideos().stream())
-                .map(movie -> {
-                    var boxart = movie.getBoxarts()
-                            .stream()
-                            .reduce((boxart1, boxart2) -> {
-                                return boxart1.getWidth()
-                                        .compareTo(boxart2.getWidth()) < 0
-                                        && boxart1.getHeight()
-                                        .compareTo(boxart2.getHeight()) < 0 ? boxart1 : boxart2;
-                            })
-                            .map(BoxArt::getUrl);
-
-                    return ImmutableMap.of("id", movie.getId(), "title", movie.getTitle(), "boxart", boxart);
-                })
+                .map(movie -> ImmutableMap.of("id", movie.getId(),
+                                                            "title", movie.getTitle(),
+                                                            "boxart", getSmallestBoxArtUrl(movie.getBoxarts())))
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    private static Optional<String> getSmallestBoxArtUrl(List<BoxArt> boxArts) {
+        return boxArts.stream()
+                    .reduce(Kata7::getSmallestBoxart)
+                    .map(BoxArt::getUrl);
+    }
+
+    private static BoxArt getSmallestBoxart(BoxArt boxArt1, BoxArt boxArt2) {
+        return boxArt1.getWidth().compareTo(boxArt2.getWidth()) < 0
+                && boxArt1.getHeight().compareTo(boxArt2.getHeight()) < 0 ? boxArt1 : boxArt2;
     }
 }

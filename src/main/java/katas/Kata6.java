@@ -18,14 +18,13 @@ public class Kata6 {
 
         return movies.stream()
                 .flatMap(movie -> movie.getBoxarts().stream())
-                .reduce((boxart1, boxart2) -> {
-                    return boxart1.getWidth()
-                            .compareTo(boxart2.getWidth()) > 0
-                            && boxart1.getHeight()
-                            .compareTo(boxart2.getHeight()) > 0 ? boxart1 : boxart2;
-                })
+                .reduce(Kata6::getLargestBoxArt)
                 .map(BoxArt::getUrl)
                 .orElseThrow(() -> new IllegalArgumentException("There are no box art data in the movies"));
+    }
 
+    private static BoxArt getLargestBoxArt(BoxArt boxArt1, BoxArt boxArt2) {
+        return boxArt1.getWidth().compareTo(boxArt2.getWidth()) > 0
+                && boxArt1.getHeight().compareTo(boxArt2.getHeight()) > 0 ? boxArt1 : boxArt2;
     }
 }

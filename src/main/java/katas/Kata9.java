@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import model.*;
 import util.DataUtil;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /*
@@ -19,25 +21,27 @@ public class Kata9 {
 
         return movieLists.stream()
                 .flatMap(movieList -> movieList.getVideos().stream())
-                .map(movie -> {
-                    var boxart = movie.getBoxarts()
-                            .stream()
-                            .reduce((boxart1, boxart2) -> {
-                                return boxart1.getWidth()
-                                        .compareTo(boxart2.getWidth()) < 0
-                                        && boxart1.getHeight()
-                                        .compareTo(boxart2.getHeight()) < 0 ? boxart1 : boxart2;
-                            })
-                            .map(BoxArt::getUrl);
-
-                    var moment = movie.getInterestingMoments()
-                            .stream()
-                            .filter(interestingMoment -> interestingMoment.getType().equals("Middle"))
-                            .findFirst()
-                            .map(InterestingMoment::getTime);
-
-                    return ImmutableMap.of("id", movie.getId(), "title", movie.getTitle(), "time",  moment,"boxart", boxart);
-                })
+                .map(movie -> ImmutableMap.of("id", movie.getId(),
+                                                            "title", movie.getTitle(),
+                                                            "time",  getInterestingMomentMiddleTime(movie.getInterestingMoments()),
+                                                            "boxart", getSmallestBoxArtUrl(movie.getBoxarts())))
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    private static Optional<String> getSmallestBoxArtUrl(List<BoxArt> boxArts) {
+        return boxArts.stream()
+                .reduce(Kata9::getSmallestBoxArt)
+                .map(BoxArt::getUrl);
+    }
+
+    private static BoxArt getSmallestBoxArt(BoxArt boxArt1, BoxArt boxArt2) {
+        return boxArt1.getWidth() < boxArt2.getWidth() && boxArt1.getHeight() < boxArt2.getHeight() ? boxArt1 : boxArt2;
+    }
+
+    private static Optional<Date> getInterestingMomentMiddleTime(List<InterestingMoment> interestingMoments) {
+        return interestingMoments.stream()
+                .filter(interestingMoment -> interestingMoment.getType().equals("Middle"))
+                .findFirst()
+                .map(InterestingMoment::getTime);
     }
 }

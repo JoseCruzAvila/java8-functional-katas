@@ -58,13 +58,15 @@ public class Kata10 {
         List<Map> videos = DataUtil.getVideos();
 
         return lists.stream()
-                .map(list -> {
-                    return Map.of("name", list.get("name"),
-                            "videos", videos.stream()
-                                                        .filter(video -> video.get("listId").equals(list.get("id")))
-                                                        .map(video -> Map.of("id", video.get("id"), "title", video.get("title")))
-                                                        .collect(Collectors.toList()));
-                })
+                .map(list -> Map.of("name", list.get("name"),
+                            "videos", getVideoInfo(videos, (Integer) list.get("id"))))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Map> getVideoInfo(List<Map> videos, Integer listId) {
+        return videos.stream()
+                .filter(video -> video.get("listId").equals(listId))
+                .map(video -> Map.of("id", video.get("id"), "title", video.get("title")))
                 .collect(Collectors.toList());
     }
 }

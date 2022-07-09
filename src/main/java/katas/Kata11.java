@@ -1,11 +1,13 @@
 package katas;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import util.DataUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /*
     Goal: Create a datastructure from the given data:
@@ -63,8 +65,41 @@ public class Kata11 {
         List<Map> boxArts = DataUtil.getBoxArts();
         List<Map> bookmarkList = DataUtil.getBookmarkList();
 
-        return ImmutableList.of(ImmutableMap.of("name", "someName", "videos", ImmutableList.of(
-                ImmutableMap.of("id", 5, "title", "The Chamber", "time", 123, "boxart", "someUrl")
-        )));
+        return lists.stream()
+                .map(list -> ImmutableMap.of("name", list.get("name"),
+                                                "videos", getVideosInfo((Integer) list.get("id"), videos, boxArts, bookmarkList)))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    private static List<Map> getVideosInfo(Integer listId, List<Map> videos, List<Map> boxArts, List<Map> bookmarkList) {
+        return videos.stream()
+                .filter(video -> video.get("listId").equals(listId))
+                .map(video -> ImmutableMap.of("id", video.get("id"),
+                                                        "title", video.get("title"),
+                                                        "time", getBookmarkTime((Integer) video.get("id"), bookmarkList),
+                                                        "boxart", getSmallestBoxArtUrl((Integer) video.get("id"), boxArts)))
+                .collect(Collectors.toUnmodifiableList());
+    }
+    private static Integer getBookmarkTime(Integer videoId, List<Map> bookmarkList) {
+        return Integer.valueOf(bookmarkList.stream()
+                .filter(bookmark -> bookmark.get("videoId").equals(videoId))
+                .findFirst()
+                .map(bookmark -> bookmark.get("time"))
+                .orElseThrow(() -> new NullPointerException("There is no bookmark time assigned"))
+                .toString());
+    }
+
+    private static String getSmallestBoxArtUrl(Integer videoId, List<Map> boxArts) {
+        return boxArts.stream()
+                .filter(boxArt -> boxArt.get("videoId").equals(videoId))
+                .reduce(Kata11::getSmallestBoxart)
+                .map(boxArt -> boxArt.get("url"))
+                .orElseThrow(() -> new NullPointerException("There is no box art url assigned"))
+                .toString();
+    }
+
+    private static Map getSmallestBoxart(Map boxArt1, Map boxArt2) {
+        return (Integer) boxArt1.get("width") <= (Integer) boxArt2.get("width")
+                && (Integer) boxArt1.get("height") <= (Integer) boxArt2.get("height") ? boxArt1 : boxArt2;
     }
 }
